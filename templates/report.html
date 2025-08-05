@@ -14,12 +14,17 @@
                         Research Report
                     </h2>
                     <div>
-                        <button onclick="window.print()" class="btn btn-outline-secondary">
-                            <i data-feather="printer" class="me-2"></i>Print
+                        <form method="POST" action="{{ url_for('generate_report', project_id=project.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-outline-success me-2">
+                                <i data-feather="refresh-cw" class="me-2"></i>Regenerar Reporte
+                            </button>
+                        </form>
+                        <button onclick="window.print()" class="btn btn-outline-secondary me-2">
+                            <i data-feather="printer" class="me-2"></i>Imprimir
                         </button>
                         <a href="{{ url_for('project_status', project_id=project.id) }}" 
                            class="btn btn-outline-primary">
-                            <i data-feather="arrow-left" class="me-2"></i>Back to Project
+                            <i data-feather="arrow-left" class="me-2"></i>Volver al Proyecto
                         </a>
                     </div>
                 </div>
@@ -51,7 +56,7 @@
             <div class="card-header">
                 <h4 class="mb-0">
                     <i data-feather="target" class="me-2"></i>
-                    Executive Summary
+                    Resumen Ejecutivo
                 </h4>
             </div>
             <div class="card-body">
@@ -66,7 +71,7 @@
             <div class="card-header">
                 <h4 class="mb-0">
                     <i data-feather="key" class="me-2"></i>
-                    Key Findings
+                    Hallazgos Principales
                 </h4>
             </div>
             <div class="card-body">
@@ -91,7 +96,7 @@
                     <div class="card-header bg-success">
                         <h5 class="mb-0 text-white">
                             <i data-feather="check-circle" class="me-2"></i>
-                            Verified Facts
+                            Hechos Verificados
                         </h5>
                     </div>
                     <div class="card-body">
@@ -115,7 +120,7 @@
                     <div class="card-header bg-danger">
                         <h5 class="mb-0 text-white">
                             <i data-feather="alert-triangle" class="me-2"></i>
-                            Potential Misinformation
+                            Posible Desinformación
                         </h5>
                     </div>
                     <div class="card-body">

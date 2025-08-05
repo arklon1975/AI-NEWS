@@ -228,11 +228,16 @@ class WorkflowManager:
         with app.app_context():
             try:
                 project = db.session.get(ResearchProject, project_id)
-                interviews = Interview.query.filter_by(project_id=project_id).all()
+                interviews = Interview.query.filter_by(project_id=project_id, status='completed').all()
                 
                 if not interviews:
-                    self.logger.warning(f"No interviews found for project {project_id}")
+                    self.logger.warning(f"No completed interviews found for project {project_id}")
+                    # Still mark as completed but without final report
+                    project.status = 'completed'
+                    db.session.commit()
                     return
+                
+                self.logger.info(f"Generating final report for project {project_id} with {len(interviews)} interviews")
                 
                 # Generate final report using AI
                 report_data = self.ai_system.generate_final_report(
@@ -241,10 +246,23 @@ class WorkflowManager:
                     project.human_notes
                 )
                 
-                project.final_report = json.dumps(report_data)
-                db.session.commit()
-                
-                self.logger.info(f"Final report generated for project {project_id}")
+                if report_data:
+                    project.final_report = json.dumps(report_data, ensure_ascii=False, indent=2)
+                    project.status = 'completed'
+                    project.updated_at = datetime.utcnow()
+                    db.session.commit()
+                    
+                    self.logger.info(f"Final report successfully generated for project {project_id}")
+                else:
+                    self.logger.error(f"No report data returned for project {project_id}")
+                    project.status = 'completed'  # Mark as completed even if report generation failed
+                    db.session.commit()
                 
             except Exception as e:
                 self.logger.error(f"Error generating final report for project {project_id}: {e}")
+                # Mark as completed anyway to prevent infinite loops
+                with app.app_context():
+                    project = db.session.get(ResearchProject, project_id)
+                    if project:
+                        project.status = 'completed'
+                        db.session.commit()

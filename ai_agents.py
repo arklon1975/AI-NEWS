@@ -228,50 +228,84 @@ class AIAgentSystem:
         """Generate final comprehensive report from all interviews"""
         try:
             interviews_summary = []
+            experts_consulted = []
+            total_credibility = 0
+            credible_count = 0
+            
             for interview in all_interviews:
+                # Parse insights and credibility data
+                insights_data = {}
+                credibility_data = {}
+                
+                try:
+                    if interview.insights:
+                        insights_data = json.loads(interview.insights) if isinstance(interview.insights, str) else interview.insights
+                    if interview.credibility_assessment:
+                        credibility_data = json.loads(interview.credibility_assessment) if isinstance(interview.credibility_assessment, str) else interview.credibility_assessment
+                        if credibility_data.get('overall_credibility'):
+                            total_credibility += credibility_data['overall_credibility']
+                            credible_count += 1
+                except:
+                    pass
+                
                 interview_data = {
                     "analyst": interview.analyst.name if interview.analyst else "Unknown",
+                    "analyst_specialization": interview.analyst.specialization if interview.analyst else "Unknown",
                     "expert": interview.expert.name if interview.expert else "Unknown",
-                    "insights": interview.insights,
-                    "credibility": interview.credibility_assessment
+                    "expert_expertise": interview.expert.expertise_area if interview.expert else "Unknown",
+                    "expert_credibility": interview.expert.credibility_score if interview.expert else 0.5,
+                    "insights": insights_data,
+                    "credibility_analysis": credibility_data,
+                    "responses": json.loads(interview.responses) if interview.responses else []
                 }
                 interviews_summary.append(interview_data)
+                
+                # Collect expert information
+                if interview.expert:
+                    experts_consulted.append(f"{interview.expert.name} - {interview.expert.expertise_area} (Credibilidad: {interview.expert.credibility_score:.2f})")
             
+            avg_credibility = total_credibility / credible_count if credible_count > 0 else 0.8
             interviews_text = json.dumps(interviews_summary, indent=2)
-            human_notes_text = f"\n\nHuman Notes: {human_notes}" if human_notes else ""
+            human_notes_text = f"\n\nInstrucciones humanas: {human_notes}" if human_notes else ""
             
             prompt = f"""
-            Create a comprehensive research report on: "{topic}"
+            Crea un informe de investigación completo sobre: "{topic}"
             
-            Based on the following analyst-expert interviews:
+            Basado en las siguientes entrevistas analista-experto:
             {interviews_text}
             {human_notes_text}
             
-            The report should include:
-            - Executive Summary
-            - Key Findings
-            - Verified Facts vs. Potential Misinformation
-            - Source Credibility Analysis
-            - Multiple Perspectives
-            - Recommendations
-            - Conclusion
+            Expertos consultados:
+            {chr(10).join(experts_consulted)}
             
-            Focus on factual accuracy, source verification, and identifying any fake news or misinformation.
+            El informe debe incluir (en español):
+            - Resumen Ejecutivo
+            - Hallazgos Principales  
+            - Hechos Verificados vs. Desinformación Potencial
+            - Análisis de Credibilidad de Fuentes
+            - Múltiples Perspectivas
+            - Recomendaciones
+            - Conclusión
             
-            Respond with JSON in this format:
+            Enfócate en precisión factual, verificación de fuentes, e identificación de fake news o desinformación.
+            
+            Responde con JSON en este formato:
             {{
-                "executive_summary": "brief overview",
-                "key_findings": ["finding 1", "finding 2", "..."],
-                "verified_facts": ["fact 1", "fact 2", "..."],
-                "potential_misinformation": ["concern 1", "concern 2", "..."],
-                "source_analysis": "analysis of source credibility",
+                "executive_summary": "resumen ejecutivo breve pero completo",
+                "key_findings": ["hallazgo 1", "hallazgo 2", "hallazgo 3", "..."],
+                "verified_facts": ["hecho verificado 1", "hecho verificado 2", "..."],
+                "potential_misinformation": ["preocupación 1", "preocupación 2", "..."],
+                "source_analysis": "análisis detallado de la credibilidad de las fuentes",
                 "perspectives": {{
-                    "perspective_1": "description",
-                    "perspective_2": "description"
+                    "political_perspective": "perspectiva política y gubernamental",
+                    "economic_perspective": "perspectiva económica y fiscal", 
+                    "international_perspective": "perspectiva internacional y comercial"
                 }},
-                "recommendations": ["recommendation 1", "recommendation 2", "..."],
-                "conclusion": "final conclusion",
-                "credibility_score": 0.87
+                "recommendations": ["recomendación 1", "recomendación 2", "..."],
+                "conclusion": "conclusión final detallada",
+                "credibility_score": {avg_credibility:.2f},
+                "experts_consulted": {len(experts_consulted)},
+                "methodology": "Análisis multi-agente con procesamiento paralelo y verificación de fuentes"
             }}
             """
             

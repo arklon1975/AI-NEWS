@@ -86,7 +86,7 @@ def view_report(project_id):
     project = ResearchProject.query.get_or_404(project_id)
     
     if not project.final_report:
-        flash('Report is not yet available. Please wait for the research to complete.', 'info')
+        flash('El reporte aún no está disponible. Por favor espera a que se complete la investigación.', 'info')
         return redirect(url_for('project_status', project_id=project_id))
     
     # Get all interviews for detailed view
@@ -104,6 +104,42 @@ def view_report(project_id):
                          report_data=report_data,
                          interviews=interviews,
                          analysts=analysts)
+
+@app.route('/project/<int:project_id>/generate-report', methods=['POST'])
+def generate_report(project_id):
+    """Generate or regenerate the final report for a completed project"""
+    project = ResearchProject.query.get_or_404(project_id)
+    
+    if project.status not in ['completed', 'reviewing']:
+        flash('Solo se pueden generar reportes para proyectos completados.', 'error')
+        return redirect(url_for('project_status', project_id=project_id))
+    
+    # Get completed interviews
+    interviews = Interview.query.filter_by(project_id=project_id, status='completed').all()
+    
+    if not interviews:
+        flash('No hay entrevistas completadas para generar el reporte.', 'warning')
+        return redirect(url_for('project_status', project_id=project_id))
+    
+    try:
+        # Generate report
+        report_data = ai_system.generate_final_report(
+            project.topic,
+            interviews,
+            project.human_notes
+        )
+        
+        if report_data:
+            project.final_report = json.dumps(report_data, ensure_ascii=False, indent=2)
+            db.session.commit()
+            flash('Reporte final generado exitosamente.', 'success')
+        else:
+            flash('Error al generar el reporte. Inténtalo de nuevo.', 'error')
+            
+    except Exception as e:
+        flash(f'Error al generar el reporte: {str(e)}', 'error')
+    
+    return redirect(url_for('view_report', project_id=project_id))
 
 @app.route('/api/project/<int:project_id>/status')
 def api_project_status(project_id):
