@@ -180,27 +180,34 @@ class WorkflowManager:
                     interview.project.topic
                 )
                 
-                # Store results
-                interview.questions = json.dumps(questions)
-                interview.responses = json.dumps(responses)
+                # Store results with proper encoding
+                interview.questions = json.dumps(questions, ensure_ascii=False)
+                interview.responses = json.dumps(responses, ensure_ascii=False)
                 interview.insights = json.dumps({
                     'key_insights': [r.get('answer', '') for r in responses],
                     'sources': [s for r in responses for s in r.get('sources', [])],
                     'credibility_notes': [r.get('credibility_notes', '') for r in responses]
-                })
-                interview.credibility_assessment = json.dumps(credibility_analysis)
-                interview.fake_news_flags = json.dumps(credibility_analysis.get('fake_news_indicators', []))
+                }, ensure_ascii=False)
+                interview.credibility_assessment = json.dumps(credibility_analysis, ensure_ascii=False)
+                interview.fake_news_flags = json.dumps(credibility_analysis.get('fake_news_indicators', []), ensure_ascii=False)
                 interview.status = 'completed'
                 interview.completed_at = datetime.utcnow()
                 
                 db.session.commit()
+                self.logger.info(f"Interview {interview_id} completed successfully")
                 
             except Exception as e:
                 self.logger.error(f"Error conducting interview {interview_id}: {e}")
-                interview = db.session.get(Interview, interview_id)
-                if interview:
-                    interview.status = 'error'
-                    db.session.commit()
+                import traceback
+                self.logger.error(f"Full traceback: {traceback.format_exc()}")
+                
+                try:
+                    interview = db.session.get(Interview, interview_id)
+                    if interview:
+                        interview.status = 'error'
+                        db.session.commit()
+                except Exception as db_error:
+                    self.logger.error(f"Error updating interview status to error: {db_error}")
     
     def _wait_for_human_review(self, project_id, timeout=300):
         """Wait for human intervention or timeout"""
