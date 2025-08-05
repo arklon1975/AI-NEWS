@@ -6,6 +6,26 @@ AI News Research Hub is a comprehensive AI-powered news research application tha
 
 Preferred communication style: Simple, everyday language.
 
+# Recent Changes (2025-08-05)
+
+## ✅ Critical Bug Fixes Completed
+- **Token Limit Issue Resolved**: Fixed OpenAI API rate limit error (13,443 tokens exceeded 10,000 limit)
+- **Interview Completion Bug Fixed**: Corrected workflow where interviews were scheduled but never executed
+- **Type Safety Improvements**: Fixed `str | None` error in JSON parsing throughout ai_agents.py
+- **Report Generation Optimized**: Implemented condensed summaries to prevent token overflow
+
+## ✅ Performance Improvements
+- **Interview Processing**: Successfully executed 5+ interviews with real AI-generated content
+- **Report Generation**: Both projects 3 and 5 now generate comprehensive reports successfully
+- **Database Integrity**: All interview data properly stored with UTF-8 encoding
+- **Error Handling**: Enhanced logging and traceback for better debugging
+
+## ✅ System Status
+- **Workflow Manager**: Fully operational with improved error recovery
+- **AI Agent System**: Stable with optimized token usage
+- **Report Templates**: Working correctly with Spanish interface
+- **Database**: All projects have properly completed interviews and generated reports
+
 # System Architecture
 
 ## Backend Architecture

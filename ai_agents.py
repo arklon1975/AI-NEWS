@@ -277,29 +277,42 @@ class AIAgentSystem:
                     experts_consulted.append(f"{interview.expert.name} - {interview.expert.expertise_area} (Credibilidad: {interview.expert.credibility_score:.2f})")
             
             avg_credibility = total_credibility / credible_count if credible_count > 0 else 0.8
-            interviews_text = json.dumps(interviews_summary, indent=2)
-            human_notes_text = f"\n\nInstrucciones humanas: {human_notes}" if human_notes else ""
+            
+            # Create condensed summary to avoid token overflow
+            condensed_summary = []
+            for interview in interviews_summary[:5]:  # Limit to 5 most relevant interviews
+                condensed = {
+                    "expert": interview.get("expert", "Unknown")[:50],
+                    "expertise": interview.get("expert_expertise", "Unknown")[:50],
+                    "analyst": interview.get("analyst", "Unknown")[:50],
+                    "key_insight": str(interview.get("insights", {}).get("key_insights", [""])[0])[:300] if interview.get("insights", {}).get("key_insights") else "No insights",
+                    "credibility": interview.get("expert_credibility", 0.5)
+                }
+                condensed_summary.append(condensed)
+            
+            interviews_text = json.dumps(condensed_summary, indent=1, ensure_ascii=False)
+            human_notes_text = f"\n\nInstrucciones: {human_notes[:200]}" if human_notes else ""
+            experts_text = ", ".join(experts_consulted[:5])  # Limit experts list
             
             prompt = f"""
-            Crea un informe de investigación completo sobre: "{topic}"
+            Crea un informe de investigación sobre: "{topic}"
             
-            Basado en las siguientes entrevistas analista-experto:
+            Entrevistas realizadas (resumen):
             {interviews_text}
             {human_notes_text}
             
-            Expertos consultados:
-            {chr(10).join(experts_consulted)}
+            Expertos: {experts_text}
             
-            El informe debe incluir (en español):
-            - Resumen Ejecutivo
-            - Hallazgos Principales  
-            - Hechos Verificados vs. Desinformación Potencial
-            - Análisis de Credibilidad de Fuentes
-            - Múltiples Perspectivas
-            - Recomendaciones
+            Incluye (en español):
+            - Resumen Ejecutivo (breve)
+            - 3-5 Hallazgos Principales  
+            - Hechos Verificados vs Posible Desinformación
+            - Análisis de Credibilidad
+            - Perspectivas Múltiples
+            - 3 Recomendaciones
             - Conclusión
             
-            Enfócate en precisión factual, verificación de fuentes, e identificación de fake news o desinformación.
+            Sé conciso pero completo. Enfócate en hechos verificables.
             
             Responde con JSON en este formato:
             {{
