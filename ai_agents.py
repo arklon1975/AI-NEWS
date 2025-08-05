@@ -124,7 +124,11 @@ class AIAgentSystem:
                 response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("No content received from OpenAI response")
+            
+            result = json.loads(content)
             return result.get("questions", [])
             
         except Exception as e:
@@ -171,7 +175,11 @@ class AIAgentSystem:
                 response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("No content received from OpenAI response")
+            
+            result = json.loads(content)
             return result.get("responses", [])
             
         except Exception as e:
@@ -211,7 +219,11 @@ class AIAgentSystem:
                 response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("No content received from OpenAI response")
+            
+            result = json.loads(content)
             return result
             
         except Exception as e:
@@ -315,7 +327,11 @@ class AIAgentSystem:
                 response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if not content:
+                raise ValueError("No content received from OpenAI response")
+            
+            result = json.loads(content)
             return result
             
         except Exception as e:
