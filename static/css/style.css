@@ -1,0 +1,259 @@
+/* Custom styles for AI News Research Hub */
+
+:root {
+    --research-primary: #0066cc;
+    --research-success: #28a745;
+    --research-warning: #ffc107;
+    --research-danger: #dc3545;
+    --research-info: #17a2b8;
+}
+
+/* Body and layout */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Cards */
+.card {
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    border-radius: 0.5rem;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Progress bars */
+.progress {
+    height: 1rem;
+}
+
+/* Status badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Feather icons */
+[data-feather] {
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+}
+
+/* Alert enhancements */
+.alert {
+    border-radius: 0.5rem;
+    border: none;
+}
+
+/* Custom list styling */
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding: 0.75rem 0;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* Accordion improvements */
+.accordion-button {
+    font-weight: 500;
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--bs-primary);
+    color: white;
+}
+
+/* Form enhancements */
+.form-control-lg {
+    font-size: 1.125rem;
+    padding: 0.75rem 1rem;
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Loading states */
+.loading {
+    position: relative;
+    overflow: hidden;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 0.5rem;
+}
+
+.status-indicator.active {
+    background-color: var(--research-success);
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.pending {
+    background-color: var(--research-warning);
+}
+
+.status-indicator.error {
+    background-color: var(--research-danger);
+}
+
+@keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Research workflow visualization */
+.workflow-step {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    position: relative;
+}
+
+.workflow-step.completed {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-left: 4px solid var(--research-success);
+}
+
+.workflow-step.active {
+    background-color: rgba(0, 123, 255, 0.1);
+    border-left: 4px solid var(--research-primary);
+}
+
+.workflow-step.pending {
+    background-color: rgba(108, 117, 125, 0.1);
+    border-left: 4px solid var(--bs-secondary);
+}
+
+/* Interview cards */
+.interview-card {
+    border-left: 4px solid var(--research-info);
+    transition: all 0.3s ease;
+}
+
+.interview-card:hover {
+    border-left-color: var(--research-primary);
+    background-color: rgba(0, 123, 255, 0.05);
+}
+
+/* Report styling */
+.report-section {
+    margin-bottom: 2rem;
+}
+
+.credibility-score {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .lead {
+        font-size: 1rem;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .navbar, .btn, .alert-dismissible .btn-close {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+        break-inside: avoid;
+    }
+    
+    .page-break {
+        page-break-before: always;
+    }
+    
+    .accordion-collapse {
+        display: block !important;
+    }
+}
+
+/* Dark theme enhancements */
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-gray-800);
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: transparent;
+    border-color: var(--bs-gray-700);
+}
+
+[data-bs-theme="dark"] .workflow-step.completed {
+    background-color: rgba(40, 167, 69, 0.2);
+}
+
+[data-bs-theme="dark"] .workflow-step.active {
+    background-color: rgba(0, 123, 255, 0.2);
+}
+
+[data-bs-theme="dark"] .interview-card:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}

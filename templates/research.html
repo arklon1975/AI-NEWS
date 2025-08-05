@@ -1,0 +1,328 @@
+{% extends "base.html" %}
+
+{% block title %}
+{% if project %}Research Project - {{ project.topic }}{% else %}New Research{% endif %} - AI News Research Hub
+{% endblock %}
+
+{% block content %}
+{% if not project %}
+<!-- New Research Form -->
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="mb-0">
+                    <i data-feather="search" class="me-2"></i>
+                    Start New Research Project
+                </h3>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-4">
+                        <label for="topic" class="form-label">Research Topic</label>
+                        <textarea class="form-control form-control-lg" 
+                                  id="topic" 
+                                  name="topic" 
+                                  rows="3" 
+                                  placeholder="Enter the topic you want to research (e.g., 'Climate change impacts on agriculture', 'Latest developments in AI safety', 'COVID-19 vaccine effectiveness')"
+                                  required></textarea>
+                        <div class="form-text">
+                            Be specific about what you want to investigate. The AI analysts will be specialized based on your topic.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i data-feather="play" class="me-2"></i>
+                            Start Research
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Research Process Overview -->
+        <div class="mt-5">
+            <h4 class="mb-3">
+                <i data-feather="info" class="me-2"></i>
+                What Happens Next?
+            </h4>
+            
+            <div class="list-group">
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <i data-feather="users" class="me-2 text-primary"></i>
+                                AI Analyst Team Generation
+                            </h6>
+                            <p class="mb-1">Specialized AI analysts will be created based on your topic</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <i data-feather="message-square" class="me-2 text-primary"></i>
+                                Expert Interview Process
+                            </h6>
+                            <p class="mb-1">Each analyst will interview relevant AI experts in parallel</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <i data-feather="eye" class="me-2 text-warning"></i>
+                                Human Review Checkpoint
+                            </h6>
+                            <p class="mb-1">You'll have the opportunity to review and refine the process</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="list-group-item">
+                    <div class="d-flex w-100 justify-content-between align-items-center">
+                        <div>
+                            <h6 class="mb-1">
+                                <i data-feather="file-text" class="me-2 text-success"></i>
+                                Final Report Generation
+                            </h6>
+                            <p class="mb-1">AI Technical Writer compiles all insights into a comprehensive report</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Research Project Status -->
+<div class="row">
+    <div class="col-12">
+        <!-- Project Header -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">
+                        <i data-feather="search" class="me-2"></i>
+                        Research Project
+                    </h3>
+                    <span class="badge fs-6
+                        {% if project.status == 'completed' %}bg-success
+                        {% elif project.status == 'error' %}bg-danger
+                        {% elif project.status == 'reviewing' %}bg-warning
+                        {% else %}bg-info{% endif %}">
+                        {{ project.status.title() }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-3">{{ project.topic }}</h4>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Started:</strong> {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Last Updated:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        {% if progress is defined %}
+                        <div class="mb-3">
+                            <label class="form-label">Progress</label>
+                            <div class="progress">
+                                <div class="progress-bar" style="width: {{ progress }}%">{{ "%.0f"|format(progress) }}%</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="mt-3">
+                    {% if project.final_report %}
+                    <a href="{{ url_for('view_report', project_id=project.id) }}" 
+                       class="btn btn-primary">
+                        <i data-feather="file-text" class="me-2"></i>
+                        View Final Report
+                    </a>
+                    {% endif %}
+                    
+                    <button type="button" 
+                            class="btn btn-outline-secondary"
+                            onclick="refreshStatus()">
+                        <i data-feather="refresh-cw" class="me-2"></i>
+                        Refresh Status
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysts Section -->
+        {% if analysts %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="users" class="me-2"></i>
+                    AI Analyst Team ({{ analysts|length }})
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for analyst in analysts %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title mb-0">{{ analyst.name }}</h6>
+                                    <span class="badge 
+                                        {% if analyst.status == 'completed' %}bg-success
+                                        {% elif analyst.status == 'interviewing' %}bg-info
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ analyst.status.title() }}
+                                    </span>
+                                </div>
+                                <p class="card-text">
+                                    <strong>Specialization:</strong> {{ analyst.specialization }}<br>
+                                    <strong>Focus:</strong> {{ analyst.research_focus }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Interviews Section -->
+        {% if interviews %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="message-circle" class="me-2"></i>
+                    Expert Interviews ({{ interviews|length }})
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    {% for interview in interviews %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h6 class="card-title mb-0">
+                                        {{ interview.analyst.name }} ↔ {{ interview.expert.name }}
+                                    </h6>
+                                    <span class="badge 
+                                        {% if interview.status == 'completed' %}bg-success
+                                        {% elif interview.status == 'in_progress' %}bg-info
+                                        {% elif interview.status == 'error' %}bg-danger
+                                        {% else %}bg-secondary{% endif %}">
+                                        {{ interview.status.replace('_', ' ').title() }}
+                                    </span>
+                                </div>
+                                <p class="card-text">
+                                    <strong>Expert Expertise:</strong> {{ interview.expert.expertise_area }}<br>
+                                    {% if interview.completed_at %}
+                                    <strong>Completed:</strong> {{ interview.completed_at.strftime('%Y-%m-%d %H:%M') }}
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Human Intervention Section -->
+        {% if project.status == 'reviewing' %}
+        <div class="card mb-4 border-warning">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0 text-dark">
+                    <i data-feather="alert-triangle" class="me-2"></i>
+                    Human Review Required
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="mb-3">
+                    The AI research process has reached a review checkpoint. Please review the preliminary findings 
+                    and provide guidance for the final report generation.
+                </p>
+
+                <form method="POST" action="{{ url_for('human_intervention', project_id=project.id) }}">
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Your Notes and Guidance</label>
+                        <textarea class="form-control" 
+                                  id="notes" 
+                                  name="notes" 
+                                  rows="4" 
+                                  placeholder="Provide any additional context, concerns, or specific aspects you want the AI to focus on in the final report...">{{ project.human_notes or '' }}</textarea>
+                    </div>
+
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button type="submit" name="action" value="approve" class="btn btn-success">
+                            <i data-feather="check" class="me-2"></i>
+                            Approve & Continue
+                        </button>
+                        
+                        <button type="submit" name="action" value="modify" class="btn btn-warning">
+                            <i data-feather="edit" class="me-2"></i>
+                            Modify & Continue
+                        </button>
+                        
+                        <button type="submit" name="action" value="stop" class="btn btn-danger">
+                            <i data-feather="stop-circle" class="me-2"></i>
+                            Stop Research
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Human Notes Display -->
+        {% if project.human_notes and project.status != 'reviewing' %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="message-square" class="me-2"></i>
+                    Human Review Notes
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ project.human_notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function refreshStatus() {
+    window.location.reload();
+}
+
+// Auto-refresh every 30 seconds for active projects
+{% if project.status not in ['completed', 'error', 'stopped'] %}
+setInterval(function() {
+    fetch('/api/project/{{ project.id }}/status')
+        .then(response => response.json())
+        .then(data => {
+            if (data.status !== '{{ project.status }}') {
+                window.location.reload();
+            }
+        })
+        .catch(error => console.log('Status check failed:', error));
+}, 30000);
+{% endif %}
+</script>
+
+{% endif %}
+{% endblock %}

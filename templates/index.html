@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% block title %}Home - AI News Research Hub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <!-- Hero Section -->
+        <div class="text-center mb-5">
+            <h1 class="display-4 mb-3">
+                <i data-feather="search" class="me-3"></i>
+                AI News Research Hub
+            </h1>
+            <p class="lead">
+                Advanced AI-powered news research using multiple intelligent agents to investigate topics, 
+                conduct expert interviews, and generate verified reports while filtering out fake news.
+            </p>
+            <a href="{{ url_for('research') }}" class="btn btn-primary btn-lg mt-3">
+                <i data-feather="plus-circle" class="me-2"></i>
+                Start New Research
+            </a>
+        </div>
+
+        <!-- How it Works -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="mb-4 text-center">
+                    <i data-feather="cog" class="me-2"></i>
+                    How It Works
+                </h2>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="user" class="display-6 text-primary mb-3"></i>
+                        <h5 class="card-title">AI Analysts</h5>
+                        <p class="card-text">Specialized AI analysts are generated for your research topic</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="message-circle" class="display-6 text-primary mb-3"></i>
+                        <h5 class="card-title">Expert Interviews</h5>
+                        <p class="card-text">AI experts are interviewed in parallel for comprehensive insights</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="eye" class="display-6 text-primary mb-3"></i>
+                        <h5 class="card-title">Human Review</h5>
+                        <p class="card-text">Human intervention points for process refinement and oversight</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card h-100">
+                    <div class="card-body text-center">
+                        <i data-feather="file-text" class="display-6 text-primary mb-3"></i>
+                        <h5 class="card-title">Final Report</h5>
+                        <p class="card-text">Comprehensive verified report with fake news filtering</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        {% if recent_projects %}
+        <div class="mb-5">
+            <h2 class="mb-4">
+                <i data-feather="clock" class="me-2"></i>
+                Recent Research Projects
+            </h2>
+            
+            <div class="row">
+                {% for project in recent_projects %}
+                <div class="col-md-6 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ project.topic }}</h5>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    Started: {{ project.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge 
+                                    {% if project.status == 'completed' %}bg-success
+                                    {% elif project.status == 'error' %}bg-danger
+                                    {% elif project.status == 'reviewing' %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    {{ project.status.title() }}
+                                </span>
+                                <div>
+                                    <a href="{{ url_for('project_status', project_id=project.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i data-feather="eye" class="me-1"></i>View
+                                    </a>
+                                    {% if project.final_report %}
+                                    <a href="{{ url_for('view_report', project_id=project.id) }}" 
+                                       class="btn btn-sm btn-primary">
+                                        <i data-feather="file-text" class="me-1"></i>Report
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Features -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="mb-4 text-center">
+                    <i data-feather="star" class="me-2"></i>
+                    Key Features
+                </h2>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i data-feather="shield-check" class="text-success me-2"></i>
+                            <h5 class="card-title mb-0">Fake News Detection</h5>
+                        </div>
+                        <p class="card-text">Advanced AI algorithms identify and filter out misinformation</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i data-feather="zap" class="text-warning me-2"></i>
+                            <h5 class="card-title mb-0">Parallel Processing</h5>
+                        </div>
+                        <p class="card-text">Multiple AI agents work simultaneously for faster research</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <i data-feather="check-circle" class="text-info me-2"></i>
+                            <h5 class="card-title mb-0">Source Verification</h5>
+                        </div>
+                        <p class="card-text">Credible sources are prioritized and verified for accuracy</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

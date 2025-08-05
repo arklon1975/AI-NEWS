@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+
+{% block title %}Research Report - {{ project.topic }} - AI News Research Hub{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <!-- Report Header -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="mb-0">
+                        <i data-feather="file-text" class="me-2"></i>
+                        Research Report
+                    </h2>
+                    <div>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            <i data-feather="printer" class="me-2"></i>Print
+                        </button>
+                        <a href="{{ url_for('project_status', project_id=project.id) }}" 
+                           class="btn btn-outline-primary">
+                            <i data-feather="arrow-left" class="me-2"></i>Back to Project
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h3 class="mb-3">{{ project.topic }}</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Research Completed:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                        <p><strong>Analysts Involved:</strong> {{ analysts|length }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Expert Interviews:</strong> {{ interviews|length }}</p>
+                        {% if report_data.get('credibility_score') %}
+                        <p><strong>Overall Credibility Score:</strong> 
+                            <span class="badge bg-{% if report_data.credibility_score >= 0.8 %}success{% elif report_data.credibility_score >= 0.6 %}warning{% else %}danger{% endif %}">
+                                {{ "%.1f"|format(report_data.credibility_score * 100) }}%
+                            </span>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Executive Summary -->
+        {% if report_data.get('executive_summary') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="target" class="me-2"></i>
+                    Executive Summary
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ report_data.executive_summary }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Key Findings -->
+        {% if report_data.get('key_findings') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="key" class="me-2"></i>
+                    Key Findings
+                </h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for finding in report_data.key_findings %}
+                    <li class="list-group-item">
+                        <i data-feather="arrow-right" class="me-2 text-primary"></i>
+                        {{ finding }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Verified Facts vs Potential Misinformation -->
+        <div class="row mb-4">
+            <!-- Verified Facts -->
+            {% if report_data.get('verified_facts') %}
+            <div class="col-md-6">
+                <div class="card h-100 border-success">
+                    <div class="card-header bg-success">
+                        <h5 class="mb-0 text-white">
+                            <i data-feather="check-circle" class="me-2"></i>
+                            Verified Facts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group list-group-flush">
+                            {% for fact in report_data.verified_facts %}
+                            <li class="list-group-item">
+                                <i data-feather="check" class="me-2 text-success"></i>
+                                {{ fact }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Potential Misinformation -->
+            {% if report_data.get('potential_misinformation') %}
+            <div class="col-md-6">
+                <div class="card h-100 border-danger">
+                    <div class="card-header bg-danger">
+                        <h5 class="mb-0 text-white">
+                            <i data-feather="alert-triangle" class="me-2"></i>
+                            Potential Misinformation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if report_data.potential_misinformation %}
+                        <ul class="list-group list-group-flush">
+                            {% for concern in report_data.potential_misinformation %}
+                            <li class="list-group-item">
+                                <i data-feather="alert-circle" class="me-2 text-danger"></i>
+                                {{ concern }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% else %}
+                        <p class="text-success mb-0">
+                            <i data-feather="shield-check" class="me-2"></i>
+                            No significant misinformation detected
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Source Analysis -->
+        {% if report_data.get('source_analysis') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="shield" class="me-2"></i>
+                    Source Credibility Analysis
+                </h4>
+            </div>
+            <div class="card-body">
+                <p>{{ report_data.source_analysis }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Multiple Perspectives -->
+        {% if report_data.get('perspectives') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="eye" class="me-2"></i>
+                    Multiple Perspectives
+                </h4>
+            </div>
+            <div class="card-body">
+                {% for perspective_name, perspective_desc in report_data.perspectives.items() %}
+                <div class="mb-3">
+                    <h6 class="text-primary">{{ perspective_name.replace('_', ' ').title() }}</h6>
+                    <p>{{ perspective_desc }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Recommendations -->
+        {% if report_data.get('recommendations') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="lightbulb" class="me-2"></i>
+                    Recommendations
+                </h4>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    {% for recommendation in report_data.recommendations %}
+                    <li class="list-group-item">
+                        <i data-feather="arrow-right" class="me-2 text-primary"></i>
+                        {{ recommendation }}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Conclusion -->
+        {% if report_data.get('conclusion') %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="check-square" class="me-2"></i>
+                    Conclusion
+                </h4>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ report_data.conclusion }}</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Interview Details -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="users" class="me-2"></i>
+                    Research Team & Interview Details
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="accordion" id="interviewAccordion">
+                    {% for interview in interviews %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#interview{{ interview.id }}">
+                                <div class="d-flex justify-content-between w-100 me-3">
+                                    <span>
+                                        <i data-feather="user" class="me-2"></i>
+                                        {{ interview.analyst.name }} → {{ interview.expert.name }}
+                                    </span>
+                                    <small class="text-muted">{{ interview.expert.expertise_area }}</small>
+                                </div>
+                            </button>
+                        </h2>
+                        <div id="interview{{ interview.id }}" 
+                             class="accordion-collapse collapse" 
+                             data-bs-parent="#interviewAccordion">
+                            <div class="accordion-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6>Analyst Profile</h6>
+                                        <p><strong>Name:</strong> {{ interview.analyst.name }}<br>
+                                           <strong>Specialization:</strong> {{ interview.analyst.specialization }}<br>
+                                           <strong>Focus:</strong> {{ interview.analyst.research_focus }}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6>Expert Profile</h6>
+                                        <p><strong>Name:</strong> {{ interview.expert.name }}<br>
+                                           <strong>Expertise:</strong> {{ interview.expert.expertise_area }}<br>
+                                           <strong>Background:</strong> {{ interview.expert.background }}</p>
+                                    </div>
+                                </div>
+                                
+                                {% if interview.insights %}
+                                <div class="mt-3">
+                                    <h6>Key Insights</h6>
+                                    <div class="alert alert-info">
+                                        {{ interview.insights }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                                
+                                {% if interview.credibility_assessment %}
+                                <div class="mt-3">
+                                    <h6>Credibility Assessment</h6>
+                                    <div class="alert alert-secondary">
+                                        {{ interview.credibility_assessment }}
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Human Notes -->
+        {% if project.human_notes %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h4 class="mb-0">
+                    <i data-feather="message-square" class="me-2"></i>
+                    Human Review Notes
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <p class="mb-0">{{ project.human_notes }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Report Metadata -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i data-feather="info" class="me-2"></i>
+                    Report Metadata
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Research Topic:</strong> {{ project.topic }}</p>
+                        <p><strong>Research Started:</strong> {{ project.created_at.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+                        <p><strong>Report Generated:</strong> {{ project.updated_at.strftime('%Y-%m-%d %H:%M UTC') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>AI Analysts Deployed:</strong> {{ analysts|length }}</p>
+                        <p><strong>Expert Interviews Conducted:</strong> {{ interviews|length }}</p>
+                        <p><strong>Research Status:</strong> {{ project.status.title() }}</p>
+                    </div>
+                </div>
+                <hr>
+                <p class="text-muted mb-0">
+                    <small>
+                        This report was generated using AI-powered research agents with OpenAI GPT-4o. 
+                        All information has been cross-referenced for credibility and fact-checked against reliable sources.
+                        Human oversight was incorporated throughout the research process.
+                    </small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .card-header .d-flex .btn {
+        display: none !important;
+    }
+    
+    .accordion-button::after {
+        display: none;
+    }
+    
+    .accordion-collapse {
+        display: block !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        margin-bottom: 1rem !important;
+    }
+}
+</style>
+{% endblock %}
