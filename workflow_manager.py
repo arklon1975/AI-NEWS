@@ -16,8 +16,10 @@ class WorkflowManager:
     
     def start_research_workflow(self, project_id):
         """Main workflow orchestrator - runs the complete research process"""
-        try:
-            with db.session.begin():
+        from app import app
+        
+        with app.app_context():
+            try:
                 project = db.session.get(ResearchProject, project_id)
                 if not project:
                     self.logger.error(f"Project {project_id} not found")
@@ -82,18 +84,22 @@ class WorkflowManager:
                 
                 self.logger.info(f"Research workflow completed for project {project_id}")
                 
-        except Exception as e:
-            self.logger.error(f"Error in research workflow for project {project_id}: {e}")
-            with db.session.begin():
-                project = db.session.get(ResearchProject, project_id)
-                if project:
-                    project.status = 'error'
-                    db.session.commit()
+            except Exception as e:
+                self.logger.error(f"Error in research workflow for project {project_id}: {e}")
+                try:
+                    project = db.session.get(ResearchProject, project_id)
+                    if project:
+                        project.status = 'error'
+                        db.session.commit()
+                except Exception as db_error:
+                    self.logger.error(f"Error updating project status: {db_error}")
     
     def _conduct_analyst_interviews(self, project_id, analyst_id):
         """Conduct interviews for a specific analyst"""
-        try:
-            with db.session.begin():
+        from app import app
+        
+        with app.app_context():
+            try:
                 analyst = db.session.get(Analyst, analyst_id)
                 project = db.session.get(ResearchProject, project_id)
                 
@@ -138,97 +144,107 @@ class WorkflowManager:
                 analyst.status = 'completed'
                 db.session.commit()
                 
-        except Exception as e:
-            self.logger.error(f"Error conducting interviews for analyst {analyst_id}: {e}")
+            except Exception as e:
+                self.logger.error(f"Error conducting interviews for analyst {analyst_id}: {e}")
     
     def _conduct_single_interview(self, interview_id):
         """Conduct a single interview between analyst and expert"""
-        try:
-            interview = db.session.get(Interview, interview_id)
-            if not interview:
-                return
-            
-            interview.status = 'in_progress'
-            db.session.commit()
-            
-            # Generate questions
-            questions = self.ai_system.generate_interview_questions(
-                interview.project.topic,
-                interview.analyst.specialization,
-                interview.expert.expertise_area
-            )
-            
-            # Conduct interview
-            responses = self.ai_system.conduct_interview(
-                questions,
-                interview.expert.background,
-                interview.project.topic
-            )
-            
-            # Analyze credibility
-            credibility_analysis = self.ai_system.analyze_credibility(
-                responses,
-                interview.project.topic
-            )
-            
-            # Store results
-            interview.questions = json.dumps(questions)
-            interview.responses = json.dumps(responses)
-            interview.insights = json.dumps({
-                'key_insights': [r.get('answer', '') for r in responses],
-                'sources': [s for r in responses for s in r.get('sources', [])],
-                'credibility_notes': [r.get('credibility_notes', '') for r in responses]
-            })
-            interview.credibility_assessment = json.dumps(credibility_analysis)
-            interview.fake_news_flags = json.dumps(credibility_analysis.get('fake_news_indicators', []))
-            interview.status = 'completed'
-            interview.completed_at = datetime.utcnow()
-            
-            db.session.commit()
-            
-        except Exception as e:
-            self.logger.error(f"Error conducting interview {interview_id}: {e}")
-            interview = db.session.get(Interview, interview_id)
-            if interview:
-                interview.status = 'error'
+        from app import app
+        
+        with app.app_context():
+            try:
+                interview = db.session.get(Interview, interview_id)
+                if not interview:
+                    return
+                
+                interview.status = 'in_progress'
                 db.session.commit()
+                
+                # Generate questions
+                questions = self.ai_system.generate_interview_questions(
+                    interview.project.topic,
+                    interview.analyst.specialization,
+                    interview.expert.expertise_area
+                )
+                
+                # Conduct interview
+                responses = self.ai_system.conduct_interview(
+                    questions,
+                    interview.expert.background,
+                    interview.project.topic
+                )
+                
+                # Analyze credibility
+                credibility_analysis = self.ai_system.analyze_credibility(
+                    responses,
+                    interview.project.topic
+                )
+                
+                # Store results
+                interview.questions = json.dumps(questions)
+                interview.responses = json.dumps(responses)
+                interview.insights = json.dumps({
+                    'key_insights': [r.get('answer', '') for r in responses],
+                    'sources': [s for r in responses for s in r.get('sources', [])],
+                    'credibility_notes': [r.get('credibility_notes', '') for r in responses]
+                })
+                interview.credibility_assessment = json.dumps(credibility_analysis)
+                interview.fake_news_flags = json.dumps(credibility_analysis.get('fake_news_indicators', []))
+                interview.status = 'completed'
+                interview.completed_at = datetime.utcnow()
+                
+                db.session.commit()
+                
+            except Exception as e:
+                self.logger.error(f"Error conducting interview {interview_id}: {e}")
+                interview = db.session.get(Interview, interview_id)
+                if interview:
+                    interview.status = 'error'
+                    db.session.commit()
     
     def _wait_for_human_review(self, project_id, timeout=300):
         """Wait for human intervention or timeout"""
+        from app import app
+        
         start_time = time.time()
         
         while time.time() - start_time < timeout:
-            project = db.session.get(ResearchProject, project_id)
-            if project.status != 'reviewing':
-                break
+            with app.app_context():
+                project = db.session.get(ResearchProject, project_id)
+                if project.status != 'reviewing':
+                    break
             time.sleep(10)  # Check every 10 seconds
         
         # If still in review state after timeout, continue automatically
-        project = db.session.get(ResearchProject, project_id)
-        if project.status == 'reviewing':
-            self.logger.info(f"Human review timeout for project {project_id}, continuing automatically")
+        with app.app_context():
+            project = db.session.get(ResearchProject, project_id)
+            if project.status == 'reviewing':
+                self.logger.info(f"Human review timeout for project {project_id}, continuing automatically")
     
     def _generate_final_report(self, project_id):
         """Generate the final comprehensive report"""
-        try:
-            project = db.session.get(ResearchProject, project_id)
-            interviews = Interview.query.filter_by(project_id=project_id).all()
-            
-            if not interviews:
-                self.logger.warning(f"No interviews found for project {project_id}")
-                return
-            
-            # Generate final report using AI
-            report_data = self.ai_system.generate_final_report(
-                project.topic,
-                interviews,
-                project.human_notes
-            )
-            
-            project.final_report = json.dumps(report_data)
-            db.session.commit()
-            
-            self.logger.info(f"Final report generated for project {project_id}")
-            
-        except Exception as e:
-            self.logger.error(f"Error generating final report for project {project_id}: {e}")
+        from app import app
+        
+        with app.app_context():
+            try:
+                project = db.session.get(ResearchProject, project_id)
+                interviews = Interview.query.filter_by(project_id=project_id).all()
+                
+                if not interviews:
+                    self.logger.warning(f"No interviews found for project {project_id}")
+                    return
+                
+                # Generate final report using AI
+                report_data = self.ai_system.generate_final_report(
+                    project.topic,
+                    interviews,
+                    project.human_notes
+                )
+                
+                project.final_report = json.dumps(report_data)
+                db.session.commit()
+                
+                self.logger.info(f"Final report generated for project {project_id}")
+                
+            except Exception as e:
+                self.logger.error(f"Error generating final report for project {project_id}: {e}")
