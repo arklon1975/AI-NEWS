@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Error del Servidor - AI News Research Hub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i data-feather="alert-triangle" class="me-2"></i>
+                        Error del Servidor (500)
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Lo sentimos, ha ocurrido un error interno en el servidor.</p>
+                    <p>Nuestro equipo ha sido notificado sobre este problema y está trabajando para solucionarlo.</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>¿Qué puedes hacer?</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>Intenta recargar la página en unos minutos</li>
+                            <li>Verifica que todos los datos del formulario sean correctos</li>
+                            <li>Si el problema persiste, contacta al administrador</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i data-feather="home" class="me-2"></i>
+                            Volver al Inicio
+                        </a>
+                        <button onclick="window.history.back()" class="btn btn-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Página Anterior
+                        </button>
+                        <button onclick="location.reload()" class="btn btn-outline-primary">
+                            <i data-feather="refresh-cw" class="me-2"></i>
+                            Reintentar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Página No Encontrada - AI News Research Hub{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">
+                        <i data-feather="search" class="me-2"></i>
+                        Página No Encontrada (404)
+                    </h4>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <i data-feather="file-x" size="64" class="text-muted"></i>
+                    </div>
+                    
+                    <h5>¡Oops! Esta página no existe</h5>
+                    <p class="text-muted">La página que estás buscando no se pudo encontrar. Es posible que haya sido movida, eliminada o que la URL sea incorrecta.</p>
+                    
+                    <div class="alert alert-info">
+                        <strong>¿Qué puedes hacer?</strong>
+                        <ul class="mb-0 mt-2 text-start">
+                            <li>Verificar que la URL esté escrita correctamente</li>
+                            <li>Usar el menú de navegación para encontrar lo que buscas</li>
+                            <li>Volver a la página principal y comenzar de nuevo</li>
+                            <li>Contactar al administrador si crees que esto es un error</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary">
+                            <i data-feather="home" class="me-2"></i>
+                            Ir al Inicio
+                        </a>
+                        <button onclick="window.history.back()" class="btn btn-secondary">
+                            <i data-feather="arrow-left" class="me-2"></i>
+                            Página Anterior
+                        </button>
+                        <a href="{{ url_for('research') }}" class="btn btn-success">
+                            <i data-feather="plus-circle" class="me-2"></i>
+                            Nueva Investigación
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

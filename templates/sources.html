@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Fuentes de Noticias Verificadas - AI News Research Hub{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i data-feather="shield-check" class="me-2"></i>
+                    Fuentes de Noticias Verificadas
+                </h2>
+                <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                    <i data-feather="arrow-left" class="me-2"></i>
+                    Volver al Inicio
+                </a>
+            </div>
+            
+            <div class="alert alert-info">
+                <i data-feather="info" class="me-2"></i>
+                <strong>Verificación de Credibilidad:</strong> Nuestro sistema utiliza únicamente fuentes de noticias verificadas con altos estándares de credibilidad para garantizar la precisión de los informes.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        {% for source in sources %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">{{ source.name }}</h5>
+                    <span class="badge bg-success">
+                        {{ "%.1f"|format(source.credibility_rating) }}/10
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Tipo:</strong> {{ source.source_type }}<br>
+                        <strong>País:</strong> {{ source.country }}<br>
+                        <strong>Idioma:</strong> {{ source.language }}
+                    </p>
+                    
+                    {% if source.description %}
+                    <p class="text-muted small">{{ source.description }}</p>
+                    {% endif %}
+                    
+                    <div class="mt-3">
+                        <small class="text-muted">
+                            <strong>Sesgo:</strong> 
+                            <span class="badge 
+                                {% if source.political_bias == 'Centro' %}bg-secondary
+                                {% elif 'Izquierda' in source.political_bias %}bg-info
+                                {% elif 'Derecha' in source.political_bias %}bg-warning
+                                {% else %}bg-light text-dark{% endif %}">
+                                {{ source.political_bias }}
+                            </span>
+                        </small>
+                    </div>
+                </div>
+                
+                {% if source.website_url %}
+                <div class="card-footer">
+                    <a href="{{ source.website_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-sm btn-outline-primary">
+                        <i data-feather="external-link" class="me-1"></i>
+                        Visitar Sitio Web
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    {% if not sources %}
+    <div class="row">
+        <div class="col-12">
+            <div class="alert alert-warning text-center">
+                <i data-feather="alert-circle" class="me-2"></i>
+                No hay fuentes de noticias configuradas en el sistema.
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>
+                        <i data-feather="info" class="me-2"></i>
+                        Criterios de Verificación
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Factores de Credibilidad:</h6>
+                            <ul>
+                                <li>Historial de precisión factual</li>
+                                <li>Transparencia editorial</li>
+                                <li>Verificación de fuentes</li>
+                                <li>Corrección de errores</li>
+                                <li>Separación entre noticias y opinión</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>Escala de Calificación:</h6>
+                            <ul>
+                                <li><span class="badge bg-success">9.0-10.0</span> Extremadamente confiable</li>
+                                <li><span class="badge bg-info">8.0-8.9</span> Muy confiable</li>
+                                <li><span class="badge bg-warning">7.0-7.9</span> Generalmente confiable</li>
+                                <li><span class="badge bg-secondary">6.0-6.9</span> Algo confiable</li>
+                                <li><span class="badge bg-danger">0.0-5.9</span> Poco confiable</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
